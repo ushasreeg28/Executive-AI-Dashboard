@@ -1,5 +1,0 @@
-status,ai_output,response_text
-200,"**1.** Machine learning is a subset of AI that enables systems to learn patterns from data and make predictions or decisions without explicit programming.  
-
-**2.** It uses algorithms to improve performance over time by training on examples (supervised/unsupervised/reinforcement learning).","{""id"":""67a58638c3bd48fc26b3412ae9ff85d3"",""object"":""chat.completion"",""created"":1770331343,""model"":""deepseek/deepseek-v3-0324"",""choices"":[{""index"":0,""message"":{""role"":""assistant"",""content"":""**1.** Machine learning is a subset of AI that enables systems to learn patterns from data and make predictions or decisions without explicit programming.  \n\n**2.** It uses algorithms to improve performance over time by training on examples (supervised/unsupervised/reinforcement learning).""},""finish_reason"":""stop""}],""usage"":{""prompt_tokens"":10,""completion_tokens"":54,""total_tokens"":64,""prompt_tokens_details"":null,""completion_tokens_details"":null},""system_fingerprint"":""""}
-"
