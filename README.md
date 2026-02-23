@@ -114,7 +114,7 @@ Alpha Vantage API/Fake Data → Firebase Realtime DB → D3.js Chart
 
 ## 👩‍💻 Author
 
-**Usha Sree G**  
+**Ushasree G**  
 [Lead Data Science Engineer](https://github.com/ushasree28g)  
 [Portfolio](https://ushasree28g.github.io) | [LinkedIn](https://linkedin.com/in/ushasree28g)
 
@@ -127,5 +127,5 @@ Built with ❤️ for 2026 US Tech Market
 
 ```
 MIT License - Free for portfolio use
-© 2026 Usha Sree G
+© 2026 Ushasree G
 ```
