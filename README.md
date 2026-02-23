@@ -129,4 +129,3 @@ Built with ❤️ for 2026 US Tech Market
 MIT License - Free for portfolio use
 © 2026 Usha Sree G
 ```
-```

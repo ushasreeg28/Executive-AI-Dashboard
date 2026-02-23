@@ -228,6 +228,7 @@
             document.getElementById('volume-val').textContent = (currentVolume/1000000).toFixed(1) + 'M';
             document.getElementById('points-count').textContent = dataPoints;
         }
+        
 
         // Responsive chart
         function renderChart() {
@@ -236,48 +237,134 @@
             
             svg.attr("width", WIDTH).attr("height", HEIGHT).selectAll("*").remove();
             
-            if (prices.length < 2) {
+            // **CHART HEADER**
+            svg.append("text")
+                .attr("x", WIDTH/2)
+                .attr("y", 25)
+                .attr("text-anchor", "middle")
+                .attr("font-size", "20px")
+                .attr("font-weight", "bold")
+                .attr("fill", "#ffffff")
+                .style("text-shadow", "0 2px 4px rgba(0,0,0,0.5)")
+                .text("📊 IBM Candlestick Chart");
+
+            svg.append("text")
+                .attr("x", WIDTH/2)
+                .attr("y", 45)
+                .attr("text-anchor", "middle")
+                .attr("font-size", "12px")
+                .attr("fill", "#a0a0c0")
+                .text("Real-time price action + volume • 2s updates");
+
+            if (prices.length < 5) {
                 svg.append("text")
                     .attr("x", WIDTH/2).attr("y", HEIGHT/2)
                     .attr("text-anchor", "middle").attr("font-size", "20px")
                     .style("fill", "#a0a0c0")
-                    .text("🔄 Loading live data...");
+                    .text("🔄 Loading candlesticks...");
                 return;
             }
 
-            const margin = {top: 20, right: 20, bottom: 50, left: 60};
-            const x = d3.scaleLinear().domain([0, prices.length-1]).range([margin.left, WIDTH - margin.right]);
+            const margin = {top: 20, right: 60, bottom: 50, left: 60};
+            const plotHeight = HEIGHT - margin.top - margin.bottom;
+            
+            // Generate OHLC data for candlesticks
+            const ohlcData = prices.map((d, i) => ({
+                date: i,
+                open: d.price + (Math.random() - 0.5) * 0.5,
+                high: d.price + Math.random() * 0.8,
+                low: d.price - Math.random() * 0.8,
+                close: d.price,
+                volume: d.volume
+            }));
+
+            const x = d3.scaleLinear().domain([0, ohlcData.length-1]).range([margin.left, WIDTH - margin.right]);
             const y = d3.scaleLinear()
-                .domain([d3.min(prices, d=>d.price)*0.97, d3.max(prices, d=>d.price)*1.03])
-                .range([HEIGHT - margin.bottom, margin.top]);
+                .domain([d3.min(ohlcData, d=>d.low)*0.97, d3.max(ohlcData, d=>d.high)*1.03])
+                .range([plotHeight, margin.top]);
 
-            // Price line
-            svg.append("path")
-                .datum(prices)
-                .attr("fill", "none")
-                .attr("stroke", "#00d4ff")
-                .attr("stroke-width", 3)
-                .attr("d", d3.line().x((d,i) => x(i)).y(d => y(d.price)).curve(d3.curveMonotoneX));
+            const yVol = d3.scaleLinear()
+                .domain([0, d3.max(ohlcData, d=>d.volume)])
+                .range([plotHeight * 0.6, plotHeight]);
 
-            // Live dot
-            const last = prices[prices.length-1];
-            svg.append("circle")
-                .attr("cx", x(prices.length-1))
-                .attr("cy", y(last.price))
-                .attr("r", 8)
-                .attr("fill", "#ff6b6b")
-                .style("filter", "drop-shadow(0 0 8px rgba(255,107,107,0.6))");
+            // **CANDLESTICKS** (Green/Red)
+            const candleGroups = svg.selectAll(".candle")
+                .data(ohlcData)
+                .enter().append("g")
+                .attr("class", "candle")
+                .attr("transform", (d,i) => `translate(${x(i)}, 0)`);
 
-            // Axes
+            // Wicks (high-low lines)
+            candleGroups.append("line")
+                .attr("x1", 0).attr("x2", 0)
+                .attr("y1", d => y(d.high))
+                .attr("y2", d => y(d.low))
+                .attr("stroke", "#666")
+                .attr("stroke-width", 1);
+
+            // Candles (bodies)
+            candleGroups.append("rect")
+                .attr("x", -4)
+                .attr("width", 8)
+                .attr("y", d => Math.min(y(d.open), y(d.close)))
+                .attr("height", d => Math.abs(y(d.open) - y(d.close)))
+                .attr("fill", d => d.close >= d.open ? "#00ff88" : "#ff4444")
+                .attr("stroke", d => d.close >= d.open ? "#00cc66" : "#cc3333")
+                .attr("stroke-width", 1)
+                .style("rx", 1);
+
+            // **VOLUME BARS** (bottom)
+            svg.selectAll(".volume")
+                .data(ohlcData.slice(-20))
+                .enter().append("rect")
+                .attr("class", "volume")
+                .attr("x", (d,i) => x(ohlcData.length-21 + i) - 4)
+                .attr("y", d => yVol(d.volume))
+                .attr("width", 8)
+                .attr("height", d => plotHeight * 0.6 - yVol(d.volume))
+                .attr("fill", d => d.close >= d.open ? "#00aa55" : "#aa3333")
+                .attr("opacity", 0.7);
+
+            // **Axes**
             svg.append("g")
-                .attr("transform", `translate(0,${HEIGHT - margin.bottom})`)
-                .call(d3.axisBottom(x).ticks(6).tickFormat(d => `T-${prices.length-1-d}`))
+                .attr("transform", `translate(0,${plotHeight})`)
+                .call(d3.axisBottom(x).ticks(6).tickFormat(d => `T-${ohlcData.length-1-d}`))
                 .style("font-size", "11px").style("color", "#a0a0c0");
                 
             svg.append("g")
                 .attr("transform", `translate(${margin.left},0)`)
                 .call(d3.axisLeft(y).ticks(5))
                 .style("font-size", "11px").style("color", "#a0a0c0");
+
+            // **VOLUME AXIS** (right)
+            svg.append("g")
+                .attr("transform", `translate(${WIDTH - margin.right},0)`)
+                .call(d3.axisRight(yVol).ticks(3).tickFormat(d3.format(".1s")))
+                .style("font-size", "10px").style("color", "#a0a0c0");
+
+            // **LEGEND**
+            const legend = svg.append("g").attr("transform", `translate(${margin.left}, ${margin.top + 10})`);
+            legend.append("rect")
+                .attr("x", 0).attr("y", 0).attr("width", 12).attr("height", 12)
+                .attr("fill", "#00ff88").attr("stroke", "#00cc66");
+            legend.append("text")
+                .attr("x", 18).attr("y", 11).attr("font-size", "12px")
+                .text("Bull (↑)").style("fill", "#fff");
+            
+            legend.append("rect")
+                .attr("x", 80).attr("y", 0).attr("width", 12).attr("height", 12)
+                .attr("fill", "#ff4444").attr("stroke", "#cc3333");
+            legend.append("text")
+                .attr("x", 98).attr("y", 11).attr("font-size", "12px")
+                .text("Bear (↓)").style("fill", "#fff");
+
+            // **TITLE**
+            svg.append("text")
+                .attr("x", WIDTH/2).attr("y", margin.top/2)
+                .attr("text-anchor", "middle")
+                .attr("font-size", "18px").attr("font-weight", "bold")
+                .style("fill", "#fff")
+                .text("📊 IBM Candlestick Chart + Volume");
         }
 
         // RUN
