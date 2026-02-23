@@ -3,7 +3,7 @@
 <head>
     <title>Executive AI Dashboard</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
-    <script type="module">
+    <!-- <script type="module">
         // REPLACE WITH YOUR KEYS
         const ALPHA_VANTAGE_KEY = 'LE782VGY0ZU5KP4Z';
         // Import the functions you need from the SDKs you need
@@ -38,7 +38,7 @@ import { getAnalytics } from "firebase/analytics";
             appId: "1:632372636045:web:f6d24ade5314da134435c4",
             measurementId: "G-LV8P7HQDF8"
         };
-    </script>
+    </script> -->
 </head>
 <body>
     <h1>🚀 Executive AI Dashboard</h1>
@@ -46,7 +46,7 @@ import { getAnalytics } from "firebase/analytics";
     <div id="status">Loading live data...</div>
 </body>
 
-<script type="module">
+<!-- <script type="module">
         const ALPHA_VANTAGE_KEY = 'LE782VGY0ZU5KP4Z';
         // Import the functions you need from the SDKs you need
        // import { initializeApp } from "firebase/app";
@@ -106,6 +106,42 @@ import { getAnalytics } from "firebase/analytics";
         }
     });
     
+</script> -->
+
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+<script>
+    // Your config (paste yours here)
+    const firebaseConfig = {
+            apiKey: "AIzaSyANPh4IDzimoezEQ-9JnvXEy_bQcZThu3Q",
+            authDomain: "realtime-executive-ai.firebaseapp.com",
+            databaseURL: "https://realtime-executive-ai-default-rtdb.firebaseio.com",
+            projectId: "realtime-executive-ai",
+            storageBucket: "realtime-executive-ai.firebasestorage.app",
+            messagingSenderId: "632372636045",
+            appId: "1:632372636045:web:f6d24ade5314da134435c4",
+            measurementId: "G-LV8P7HQDF8"
+        };
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    
+    // Rest of your code stays same...
+    const ALPHA_VANTAGE_KEY = 'LE782VGY0ZU5KP4Z'; // Remove real key for portfolio
+    
+    async function fetchStockData() {
+        // Your existing fetchStockData function
+        document.getElementById('status').textContent = 'Demo mode - Live D3.js working!';
+    }
+    
+    // Listen for Firebase updates (compat syntax)
+    db.ref('stocks/IBM').on('value', (snapshot) => {
+        const data = snapshot.val();
+        console.log("Firebase update:", data); // Debug log
+        if (data) updateChart(data);
+    });
+ 
     // D3.js Live Chart
     const svg = d3.select("#stock-chart")
         .append("svg")
@@ -116,6 +152,8 @@ import { getAnalytics } from "firebase/analytics";
     
     function updateChart(data) {
         prices.push({time: new Date(), price: data.price});
+        console.log("Chart data:", prices);  // Open F12 → Console to see
+
         if (prices.length > 20) prices.shift(); // Keep last 20 points
         
         // Clear and redraw
@@ -143,5 +181,8 @@ import { getAnalytics } from "firebase/analytics";
     // Start live updates
     fetchStockData();
     setInterval(fetchStockData, 30000); // Every 30 seconds
+
+
 </script>
+
 </html>
