@@ -1,4 +1,3 @@
-__pycache__/
-*.pyc
-secrets_local.py
 .env
+secrets.js  # Just in case
+.DS_Store
